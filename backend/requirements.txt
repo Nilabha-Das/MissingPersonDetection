@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+motor
+pydantic-settings
+opencv-python
+numpy
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+email-validator
+google-auth
+requests

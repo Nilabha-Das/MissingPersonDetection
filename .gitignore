@@ -1,0 +1,25 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets and env files
+.env
+.env.*
+!.env.example
+
+# Python backend
+backend/__pycache__/
+backend/**/*.pyc
+backend/.venv/
+backend/venv/
+backend/uploads/
+
+# Logs
+*.log
+
+# Node/Next frontend (frontend has its own .gitignore too)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
