@@ -575,22 +575,35 @@ async def get_matches_for_report(
         if found_alert:
             is_found_owner = True
 
+    is_webcam_authority = False
     if not is_missing_owner and not is_found_owner:
+        webcam_alert = await db["alerts"].find_one({
+            "missing_id": report_id,
+            "type": "webcam_match",
+            "authority_id": user_id,
+        })
+        if webcam_alert:
+            is_webcam_authority = True
+
+    if not is_missing_owner and not is_found_owner and not is_webcam_authority:
         raise HTTPException(status_code=403, detail="Not authorized to view these matches")
     # -----------------------------------------------------------------------
 
-    # Fetch all match alerts for this missing report
+    # Fetch all match alerts for this missing report, including webcam scans
     alerts: list[dict] = []
     seen_found_ids: set[str] = set()
     cursor = db["alerts"].find({
         "missing_id": report_id,
-        "type": {"$exists": False},
+        "$or": [
+            {"type": {"$exists": False}},
+            {"type": "webcam_match"},
+        ],
     }).sort("similarity", -1)
     async for alert in cursor:
-        fid = alert.get("found_id", "")
-        if fid in seen_found_ids:
+        alert_key = alert.get("found_id") or str(alert.get("_id", ""))
+        if alert_key in seen_found_ids:
             continue
-        seen_found_ids.add(fid)
+        seen_found_ids.add(alert_key)
         alert["_id"] = str(alert["_id"])
         alerts.append(alert)
 
@@ -605,10 +618,11 @@ async def get_matches_for_report(
             except Exception:
                 pass
 
-        finder_name = "Anonymous"
-        finder_phone = alert.get("found_contact_phone")
+        finder_name = alert.get("authority_name") or "Anonymous"
+        finder_phone = alert.get("authority_phone") or alert.get("found_contact_phone")
         found_created_by = alert.get("found_created_by") or (found_doc.get("created_by") if found_doc else None)
-        if found_created_by:
+
+        if found_created_by and not alert.get("authority_name"):
             try:
                 user_doc = await db["users"].find_one({"_id": ObjectId(found_created_by)})
                 if user_doc:
@@ -617,6 +631,7 @@ async def get_matches_for_report(
                         finder_phone = user_doc.get("phone_number")
             except Exception:
                 pass
+
         if not finder_phone and found_doc and found_doc.get("contact_info"):
             finder_phone = found_doc["contact_info"]
 
@@ -627,8 +642,9 @@ async def get_matches_for_report(
             "similarity": alert.get("similarity", 0),
             "finder_name": finder_name,
             "finder_phone": finder_phone,
-            "found_location": found_doc.get("found_location") if found_doc else None,
-            "found_image_path": found_doc.get("image_path") if found_doc else None,
+            "found_location": alert.get("found_location") or (found_doc.get("found_location") if found_doc else None),
+            "found_image_path": alert.get("found_image_path") or (found_doc.get("image_path") if found_doc else None),
+            "missing_image_path": report.get("image_path"),
             "scoring": alert.get("scoring"),
             "created_at": alert.get("created_at", "").isoformat() if hasattr(alert.get("created_at", ""), "isoformat") else str(alert.get("created_at", "")),
         })

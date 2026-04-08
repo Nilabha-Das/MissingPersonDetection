@@ -356,7 +356,15 @@ async def my_alerts(
     # Enrich alerts with full report details
     enriched_alerts = []
     for alert in items:
-        enriched_alert = dict(alert)
+        enriched_alert = {
+            "_id": alert.get("_id"),
+            "missing_id": alert.get("missing_id"),
+            "found_id": alert.get("found_id"),
+            "similarity": alert.get("similarity", 0),  # Explicitly include similarity with default
+            "created_at": alert.get("created_at").isoformat() if hasattr(alert.get("created_at"), "isoformat") else str(alert.get("created_at", "")),
+            "read_at": alert.get("read_at").isoformat() if alert.get("read_at") and hasattr(alert.get("read_at"), "isoformat") else alert.get("read_at"),
+            "type": alert.get("type"),
+        }
         
         # Fetch missing report if missing_id exists
         if alert.get("missing_id"):

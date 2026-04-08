@@ -667,7 +667,17 @@ export default function DashboardPage() {
   const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
   const imgUrl = (path?: string | null) => {
     if (!path) return "/placeholder.png";
-    return path.startsWith("http") ? path : `${API}/${path.replace(/\\/g, "/")}`;
+
+    const trimmed = path.trim();
+    if (trimmed === "") return "/placeholder.png";
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+    const normalized = trimmed.replace(/\\/g, "/");
+    const uploadsIndex = normalized.toLowerCase().indexOf("uploads/");
+    const relativePath = uploadsIndex >= 0 ? normalized.slice(uploadsIndex) : normalized;
+    const absolutePath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+
+    return `${API}${absolutePath}`;
   };
 
   const missingCards = useMemo(
@@ -828,6 +838,16 @@ export default function DashboardPage() {
                       const pct = Math.round((alert.similarity ?? 0) * 100);
                       const missingReport = (alert as any).missing_report;
                       const foundReport = (alert as any).found_report;
+                      const alertFoundImage =
+                        alert.found_image_path || alert.screenshot_url || foundReport?.image_path;
+                      const alertFoundLocation =
+                        alert.found_location || alert.camera_name || getAlertLocation(foundReport);
+                      const liveInfo =
+                        alert.type === "webcam_match"
+                          ? alert.authority_name
+                            ? `Found by ${alert.authority_name}`
+                            : "Live camera match"
+                          : undefined;
                       const c = confidenceColor(pct);
                       return (
                         <Link key={alert._id} href={`/matches/${alert.missing_id}`} className="group block">
@@ -850,14 +870,17 @@ export default function DashboardPage() {
                                   {pct}%
                                 </div>
                                 <div className="flex items-center gap-2 flex-1 md:justify-end">
-                                  {foundReport?.image_path ? (
-                                    <div className="h-16 w-16 shrink-0 rounded-lg border border-cyan-300 bg-cover bg-center" style={{ backgroundImage: `url(${imgUrl(foundReport.image_path)})` }} />
+                                  {alertFoundImage ? (
+                                    <div className="h-16 w-16 shrink-0 rounded-lg border border-cyan-300 bg-cover bg-center" style={{ backgroundImage: `url(${imgUrl(alertFoundImage)})` }} />
                                   ) : (
                                     <div className="h-16 w-16 shrink-0 rounded-lg border border-cyan-300 bg-cyan-200" />
                                   )}
                                   <div className="min-w-0 flex-1 md:text-left">
                                     <p className="text-[10px] font-semibold uppercase text-slate-500">Found</p>
-                                    <p className="font-semibold text-slate-900 truncate text-sm">{getAlertLocation(foundReport)}</p>
+                                    <p className="font-semibold text-slate-900 truncate text-sm">{alertFoundLocation}</p>
+                                    {liveInfo ? (
+                                      <p className="text-[10px] text-slate-500">{liveInfo}</p>
+                                    ) : null}
                                   </div>
                                 </div>
                               </div>

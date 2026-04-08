@@ -379,6 +379,9 @@ async def list_alerts(
     alerts: List[dict] = []
     async for alert in cursor:
         alert["_id"] = str(alert["_id"])
+        # Ensure similarity field is present with a default value
+        if "similarity" not in alert:
+            alert["similarity"] = 0
         alerts.append(alert)
     return {"alerts": alerts, "pagination": {"skip": skip, "limit": limit, "total": total}}
 

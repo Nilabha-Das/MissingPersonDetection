@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
-import Image from "next/image";
 import AppNavbar from "@/components/AppNavbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -10,8 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationContext";
 import { getSurveillanceLiveAlerts, listCameras } from "@/services/api";
 import type { CameraFeed, SurveillanceAlert } from "@/types";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export default function SurveillanceMonitorPage() {
   const { token } = useAuth();
@@ -28,12 +25,6 @@ export default function SurveillanceMonitorPage() {
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const buildAssetUrl = (path: string | undefined | null) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    return `${API_BASE_URL}${path.replace(/\\/g, "/")}`;
-  };
 
   const loadCameras = useCallback(async () => {
     if (!token) return;

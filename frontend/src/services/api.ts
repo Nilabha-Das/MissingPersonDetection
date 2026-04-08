@@ -8,7 +8,6 @@ import type {
   CreateMissingPayload,
   CreateMissingResponse,
   LiveCameraScanResponse,
-  LiveCameraMatch,
   MatchDetail,
   SurveillanceAlert,
 } from "@/types";
@@ -35,6 +34,15 @@ interface BackendError {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
+
+// Log configuration for debugging
+if (typeof window !== "undefined") {
+  console.log("[API Config]", {
+    API_BASE_URL,
+    USE_MOCK_API,
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  });
+}
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => window.setTimeout(resolve, ms));
@@ -117,6 +125,8 @@ function toBackendAlerts(): BackendAlert[] {
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
+  console.log("[parseResponse]", { status: response.status, ok: response.ok, url: response.url });
+  
   if (!response.ok) {
     let detail = "Request failed";
     try {
@@ -124,7 +134,9 @@ async function parseResponse<T>(response: Response): Promise<T> {
       detail = errorBody.detail ?? detail;
     } catch {
       // Keep fallback detail message when response body is not JSON.
+      detail = `HTTP ${response.status}: ${response.statusText || "Unknown error"}`;
     }
+    console.error("[parseResponse] Error detail:", detail);
     throw new Error(detail);
   }
   return (await response.json()) as T;
@@ -177,12 +189,19 @@ export async function loginWithEmail(payload: {
     };
   }
 
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return parseResponse<AuthResponse>(response);
+  console.log("[loginWithEmail] Attempting login with URL:", `${API_BASE_URL}/auth/login`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    console.log("[loginWithEmail] Response status:", response.status);
+    return parseResponse<AuthResponse>(response);
+  } catch (error) {
+    console.error("[loginWithEmail] Fetch error:", error);
+    throw error;
+  }
 }
 
 export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {

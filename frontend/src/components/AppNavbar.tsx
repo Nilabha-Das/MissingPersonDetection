@@ -341,7 +341,7 @@ export default function AppNavbar() {
                 setServicesOpen((prev) => !prev);
               }}
               className={`appearance-none border-0 bg-transparent cursor-pointer ${navTabBaseClass} ${isServicesActive ? navTabActiveClass : navTabInactiveClass}`}
-              aria-expanded={servicesOpen ? "true" : "false"}
+              aria-expanded={servicesOpen}
               onFocus={scheduleOpenServices}
               type="button"
             >

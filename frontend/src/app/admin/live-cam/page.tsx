@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import AppNavbar from "@/components/AppNavbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -12,6 +13,7 @@ import type { LiveCameraMatch } from "@/types";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export default function LiveCamPage() {
+  const router = useRouter();
   const { token } = useAuth();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -37,7 +39,7 @@ export default function LiveCamPage() {
           videoRef.current.srcObject = stream;
         }
         setStreamReady(true);
-      } catch (err) {
+      } catch {
         setError(
           "Unable to access your camera. Please allow camera access or upload a snapshot manually.",
         );
@@ -55,7 +57,8 @@ export default function LiveCamPage() {
   const buildAssetUrl = (path: string | undefined | null) => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
-    return `${API_BASE_URL}${path.replace(/\\/g, "/")}`;
+    const normalizedPath = path.replace(/\\/g, "/");
+    return `${API_BASE_URL}${normalizedPath.startsWith("/") ? "" : "/"}${normalizedPath}`;
   };
 
   const captureFrame = async () => {
@@ -326,6 +329,15 @@ export default function LiveCamPage() {
                               </p>
                             ) : null}
                           </div>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/matches/${match.missing_id}`)}
+                            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                          >
+                            View match details
+                          </button>
                         </div>
                       </article>
                     ))}
