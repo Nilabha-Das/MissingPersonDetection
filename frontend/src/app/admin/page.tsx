@@ -15,7 +15,7 @@ import {
   resetDatabase,
 } from "@/services/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 const statusStyles = {
   Pending: "bg-amber-100 text-amber-800",
@@ -129,8 +129,9 @@ export default function AdminDashboardPage() {
   const alertCards = useMemo(
     () =>
       alerts.map((item) => {
-        const screenshotUrl = item.screenshot_url
-          ? `${API_BASE_URL}${item.screenshot_url.replace(/\\/g, "/")}`
+        const screenshotPath = item.screenshot_url || item.found_image_path;
+        const screenshotUrl = screenshotPath
+          ? `${API_BASE_URL}${screenshotPath.startsWith("/") ? "" : "/"}${screenshotPath.replace(/\\/g, "/")}`
           : null;
 
         const defaultLocation = item.camera_name

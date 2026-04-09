@@ -382,6 +382,9 @@ async def list_alerts(
         # Ensure similarity field is present with a default value
         if "similarity" not in alert:
             alert["similarity"] = 0
+        # Preserve live capture thumbnails for older alert schemas.
+        if "screenshot_url" not in alert and alert.get("found_image_path"):
+            alert["screenshot_url"] = alert.get("found_image_path")
         alerts.append(alert)
     return {"alerts": alerts, "pagination": {"skip": skip, "limit": limit, "total": total}}
 

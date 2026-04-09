@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   api:
@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/find_me_ai
+      - MONGODB_URI=mongodb+srv://kunduipsita61:Test123@cluster0.7g1xbj0.mongodb.net/find_me_ai
     ports:
       - "8000:8000"
     depends_on:

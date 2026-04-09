@@ -364,6 +364,12 @@ async def my_alerts(
             "created_at": alert.get("created_at").isoformat() if hasattr(alert.get("created_at"), "isoformat") else str(alert.get("created_at", "")),
             "read_at": alert.get("read_at").isoformat() if alert.get("read_at") and hasattr(alert.get("read_at"), "isoformat") else alert.get("read_at"),
             "type": alert.get("type"),
+            "screenshot_url": alert.get("screenshot_url") or alert.get("found_image_path"),
+            "found_image_path": alert.get("found_image_path"),
+            "found_location": alert.get("found_location"),
+            "camera_name": alert.get("camera_name"),
+            "authority_name": alert.get("authority_name"),
+            "authority_phone": alert.get("authority_phone"),
         }
         
         # Fetch missing report if missing_id exists
@@ -423,6 +429,12 @@ async def get_all_alerts(
             "found_id": alert.get("found_id", ""),
             "similarity": alert.get("similarity"),
             "created_at": alert.get("created_at"),
+            "screenshot_url": alert.get("screenshot_url"),
+            "found_image_path": alert.get("found_image_path"),
+            "found_location": alert.get("found_location"),
+            "camera_name": alert.get("camera_name"),
+            "authority_name": alert.get("authority_name"),
+            "authority_phone": alert.get("authority_phone"),
             "missing_report": None,
             "found_report": None,
         }

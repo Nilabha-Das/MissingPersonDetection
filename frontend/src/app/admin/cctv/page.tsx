@@ -11,7 +11,7 @@ import { useNotifications } from "@/context/NotificationContext";
 import { getSurveillanceLiveAlerts, listCameras } from "@/services/api";
 import type { CameraFeed, SurveillanceAlert } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export default function CctcDashboardPage() {
   const { token } = useAuth();

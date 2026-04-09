@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { scanLiveCamera } from "@/services/api";
 import type { LiveCameraMatch } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export default function LiveCamPage() {
   const router = useRouter();
